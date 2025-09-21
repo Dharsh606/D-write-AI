@@ -1,0 +1,619 @@
+<!doctype html>
+<html lang="en">
+<head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>D-Write AI</title>
+    <meta name="description" content="Generate high-quality blog posts with AI-powered templates. Create, save, and export professional blog content offline." />
+    <meta name="author" content="Dharshan" />
+    <meta name="keywords" content="AI blog generator, content creation, blog writing, template generator, offline blog tool" />
+    
+    <meta property="og:title" content="AI Blog Generator — Dharshan" />
+    <meta property="og:description" content="Generate high-quality blog posts with AI-powered templates. Create, save, and export professional blog content offline." />
+    <meta property="og:type" content="website" />
+    
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    colors: {
+                        slate: {
+                            950: '#0f0f23',
+                            900: '#1e293b',
+                            800: '#334155',
+                            700: '#475569'
+                        }
+                    }
+                }
+            }
+        }
+    </script>
+    <style>
+        .gradient-header {
+            background: linear-gradient(135deg, #6366f1, #8b5cf6);
+        }
+        .gradient-card {
+            background: linear-gradient(135deg, #334155, #1e293b);
+        }
+        .shadow-glow {
+            box-shadow: 0 0 20px rgba(99, 102, 241, 0.3);
+        }
+        .shadow-card {
+            box-shadow: 0 4px 20px rgba(15, 15, 35, 0.3);
+        }
+        .line-clamp-2 {
+            display: -webkit-box;
+            -webkit-line-clamp: 2;
+            -webkit-box-orient: vertical;
+            overflow: hidden;
+        }
+        .animate-pulse {
+            animation: pulse 2s cubic-bezier(0.4, 0, 0.6, 1) infinite;
+        }
+        @keyframes pulse {
+            0%, 100% {
+                opacity: 1;
+            }
+            50% {
+                opacity: .5;
+            }
+        }
+        .toast {
+            position: fixed;
+            top: 20px;
+            right: 20px;
+            background: #334155;
+            color: white;
+            padding: 12px 16px;
+            border-radius: 8px;
+            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.3);
+            transform: translateX(100%);
+            transition: transform 0.3s ease;
+            z-index: 1000;
+        }
+        .toast.show {
+            transform: translateX(0);
+        }
+    </style>
+</head>
+<body class="bg-slate-900 text-slate-100 min-h-screen flex flex-col">
+
+    <!-- Header -->
+    <header class="gradient-header shadow-lg">
+        <div class="max-w-7xl mx-auto px-6 py-6">
+            <div class="flex items-center justify-between">
+                <h1 class="text-2xl font-bold">D-Write AI</h1>
+                <small class="opacity-80">Standalone • HTML + Tailwind + JS</small>
+            </div>
+        </div>
+    </header>
+
+    <!-- Main Content -->
+    <main class="flex-1 max-w-7xl mx-auto p-6">
+        <div class="grid lg:grid-cols-3 gap-6 mb-8">
+            <!-- Form Section -->
+            <div class="lg:col-span-1 gradient-card p-6 rounded-lg shadow-card border border-slate-700">
+                <h2 class="text-xl font-semibold mb-4">Create a blog draft</h2>
+                
+                <form id="blog-form" class="space-y-4">
+                    <div>
+                        <label class="block mb-2 text-sm opacity-80">Title / Topic</label>
+                        <input id="topic" class="w-full p-3 rounded-md bg-slate-900 border border-slate-700 text-slate-100 placeholder-slate-400 focus:ring-2 focus:ring-indigo-500 focus:border-transparent outline-none transition-all" placeholder="e.g. Minimalist Morning Routine" />
+                    </div>
+
+                    <div>
+                        <label class="block mb-2 text-sm opacity-80">Tone</label>
+                        <select id="tone" class="w-full p-3 rounded-md bg-slate-900 border border-slate-700 text-slate-100 focus:ring-2 focus:ring-indigo-500 focus:border-transparent outline-none">
+                            <option value="Professional">Professional</option>
+                            <option value="Casual">Casual</option>
+                            <option value="Friendly">Friendly</option>
+                            <option value="Technical">Technical</option>
+                        </select>
+                    </div>
+
+                    <div>
+                        <label class="block mb-2 text-sm opacity-80">Length</label>
+                        <select id="length" class="w-full p-3 rounded-md bg-slate-900 border border-slate-700 text-slate-100 focus:ring-2 focus:ring-indigo-500 focus:border-transparent outline-none">
+                            <option value="short">Short (300-400 words)</option>
+                            <option value="medium">Medium (600-800 words)</option>
+                            <option value="long">Long (1000+ words)</option>
+                        </select>
+                    </div>
+
+                    <div>
+                        <label class="block mb-2 text-sm opacity-80">Seed Ideas (optional)</label>
+                        <input id="seed-ideas-form" class="w-full p-3 rounded-md bg-slate-900 border border-slate-700 text-slate-100 placeholder-slate-400 focus:ring-2 focus:ring-indigo-500 focus:border-transparent outline-none" placeholder="Add quick points (comma separated)" />
+                    </div>
+
+                    <div class="flex gap-2 pt-2">
+                        <button type="submit" id="generate" class="flex-1 py-3 px-4 rounded-md bg-indigo-600 hover:bg-indigo-500 shadow-glow hover:shadow-glow transition-all duration-300 font-medium">
+                            Generate
+                        </button>
+                        <button type="button" id="clear" class="py-3 px-4 rounded-md bg-slate-700 hover:bg-slate-600 transition-all duration-300">
+                            Clear
+                        </button>
+                    </div>
+                </form>
+
+                <p class="text-xs mt-4 opacity-70 leading-relaxed">
+                    This app includes a local template-based generator so you can create drafts offline. 
+                    To enable real AI calls you must add a backend proxy for your OpenAI key.
+                </p>
+            </div>
+
+            <!-- Editor Section -->
+            <div class="lg:col-span-2 gradient-card p-6 rounded-lg shadow-card border border-slate-700 flex flex-col">
+                <div class="flex items-center justify-between mb-4">
+                    <h2 class="text-xl font-semibold">Draft</h2>
+                    <div class="flex gap-2">
+                        <button id="copy" class="py-2 px-3 rounded-md bg-slate-700 hover:bg-slate-600 text-sm transition-all duration-300">
+                            📋 Copy
+                        </button>
+                        <button id="save" class="py-2 px-3 rounded-md bg-slate-700 hover:bg-slate-600 text-sm transition-all duration-300">
+                            💾 Save
+                        </button>
+                        <button id="export-md" class="py-2 px-3 rounded-md bg-slate-700 hover:bg-slate-600 text-sm transition-all duration-300">
+                            📝 Export MD
+                        </button>
+                        <button id="export-txt" class="py-2 px-3 rounded-md bg-slate-700 hover:bg-slate-600 text-sm transition-all duration-300">
+                            📄 Export TXT
+                        </button>
+                    </div>
+                </div>
+
+                <textarea id="draft" rows="16" class="flex-1 min-h-[400px] p-4 rounded-md bg-slate-900 border border-slate-700 text-slate-100 placeholder-slate-400 focus:ring-2 focus:ring-indigo-500 focus:border-transparent outline-none resize-none" placeholder="Your generated blog content will appear here..."></textarea>
+
+                <div class="border-t border-slate-700 pt-4 mt-4">
+                    <div class="flex gap-2">
+                        <input id="seed-ideas" placeholder="Add quick points (comma separated)" class="flex-1 p-3 rounded-md bg-slate-900 border border-slate-700 text-slate-100 placeholder-slate-400 focus:ring-2 focus:ring-indigo-500 focus:border-transparent outline-none" />
+                        <button id="expand" class="py-3 px-4 rounded-md bg-emerald-600 hover:bg-emerald-500 transition-all duration-300">
+                            Expand
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Saved Blogs Section -->
+        <div id="saved-blogs-section" class="gradient-card p-6 rounded-lg shadow-card border border-slate-700">
+            <div class="flex items-center justify-between mb-6">
+                <h2 class="text-xl font-semibold">
+                    Saved Blog Posts (<span id="saved-count">0</span>)
+                </h2>
+                <button id="clear-all" class="py-2 px-4 rounded-md bg-red-600 hover:bg-red-500 text-sm transition-all duration-300">
+                    Clear All
+                </button>
+            </div>
+            <div id="saved-blogs-container">
+                <div id="no-blogs" class="text-center py-8">
+                    <p class="text-slate-400 mb-4">No saved blog posts yet.</p>
+                    <p class="text-sm text-slate-500">Generate and save blog posts to see them here.</p>
+                </div>
+            </div>
+        </div>
+    </main>
+
+    <!-- Footer -->
+    <footer class="bg-slate-950 text-slate-400 py-6 mt-16">
+        <div class="max-w-7xl mx-auto px-6">
+            <div class="flex justify-between items-center text-sm">
+                <span>Created by Dharshan</span>
+                <span>Use responsibly — don't expose secret API keys in client code</span>
+            </div>
+        </div>
+    </footer>
+
+    <script>
+        // Blog generation templates
+        const templates = {
+            intros: {
+                Professional: [
+                    "In today's rapidly evolving business landscape, understanding {topic} has become essential for success.",
+                    "As organizations continue to adapt to modern challenges, {topic} emerges as a critical factor.",
+                    "The importance of {topic} cannot be overstated in our current market environment."
+                ],
+                Casual: [
+                    "Let's talk about {topic} - something that's been on my mind lately.",
+                    "Ever wondered about {topic}? You're not alone in thinking about this.",
+                    "Here's the thing about {topic} that nobody really talks about."
+                ],
+                Friendly: [
+                    "Hey there! Today I want to share some thoughts on {topic} with you.",
+                    "I'm excited to dive into {topic} with you today!",
+                    "Let's explore {topic} together - it's going to be fun!"
+                ],
+                Technical: [
+                    "This comprehensive analysis examines {topic} from multiple technical perspectives.",
+                    "In this technical deep-dive, we'll explore the intricacies of {topic}.",
+                    "Understanding the technical foundations of {topic} requires careful examination."
+                ]
+            },
+            outlineTemplates: {
+                short: [
+                    "Introduction and key concepts",
+                    "Main benefits and applications", 
+                    "Practical tips for implementation",
+                    "Conclusion and next steps"
+                ],
+                medium: [
+                    "Understanding the fundamentals",
+                    "Historical context and evolution",
+                    "Current best practices",
+                    "Common challenges and solutions",
+                    "Real-world examples",
+                    "Future trends and predictions"
+                ],
+                long: [
+                    "Comprehensive introduction",
+                    "Historical background and evolution",
+                    "Core principles and methodologies",
+                    "Detailed analysis of benefits",
+                    "Common challenges and mitigation strategies",
+                    "Case studies and examples",
+                    "Advanced techniques and approaches",
+                    "Industry trends and future outlook",
+                    "Conclusion and actionable recommendations"
+                ]
+            }
+        };
+
+        const wordCounts = {
+            short: "300-400",
+            medium: "600-800",
+            long: "1000+"
+        };
+
+        // Current blog post
+        let currentPost = null;
+
+        // DOM elements
+        const topicEl = document.getElementById('topic');
+        const toneEl = document.getElementById('tone');
+        const lengthEl = document.getElementById('length');
+        const seedIdeasFormEl = document.getElementById('seed-ideas-form');
+        const draftEl = document.getElementById('draft');
+        const seedIdeasEl = document.getElementById('seed-ideas');
+        const generateBtn = document.getElementById('generate');
+        const clearBtn = document.getElementById('clear');
+        const copyBtn = document.getElementById('copy');
+        const saveBtn = document.getElementById('save');
+        const exportMdBtn = document.getElementById('export-md');
+        const exportTxtBtn = document.getElementById('export-txt');
+        const expandBtn = document.getElementById('expand');
+        const clearAllBtn = document.getElementById('clear-all');
+        const blogForm = document.getElementById('blog-form');
+
+        // Toast notification
+        function showToast(message, type = 'success') {
+            const toast = document.createElement('div');
+            toast.className = `toast ${type === 'error' ? 'bg-red-600' : 'bg-green-600'}`;
+            toast.textContent = message;
+            document.body.appendChild(toast);
+            
+            setTimeout(() => toast.classList.add('show'), 100);
+            setTimeout(() => {
+                toast.classList.remove('show');
+                setTimeout(() => document.body.removeChild(toast), 300);
+            }, 3000);
+        }
+
+        // Generate blog post
+        function generateBlogPost(formData) {
+            const { topic, tone, length, seedIdeas } = formData;
+            
+            // Generate intro
+            const introTemplates = templates.intros[tone];
+            const intro = introTemplates[Math.floor(Math.random() * introTemplates.length)]
+                .replace('{topic}', topic);
+            
+            // Generate outline
+            const outlineTemplate = templates.outlineTemplates[length];
+            const outline = [...outlineTemplate];
+            
+            // Generate content based on length
+            let content = `${intro}\n\n`;
+            
+            outline.forEach((point, index) => {
+                content += `## ${index + 1}. ${point}\n\n`;
+                
+                if (length === 'short') {
+                    content += `This section explores ${point.toLowerCase()} in relation to ${topic}. Key considerations include practical applications and immediate benefits that can be realized.\n\n`;
+                } else if (length === 'medium') {
+                    content += `When examining ${point.toLowerCase()}, it's important to consider multiple perspectives. ${topic} presents unique opportunities and challenges that require careful consideration.\n\nFurthermore, industry research suggests that successful implementation depends on understanding both theoretical foundations and practical applications. This balanced approach ensures sustainable results.\n\n`;
+                } else {
+                    content += `A comprehensive examination of ${point.toLowerCase()} reveals the complexity inherent in ${topic}. Multiple factors contribute to successful outcomes, including strategic planning, resource allocation, and stakeholder engagement.\n\nResearch indicates that organizations that prioritize ${point.toLowerCase()} see significant improvements in overall performance. This correlation suggests a strong causal relationship between focused attention to these areas and measurable results.\n\nAdditionally, emerging trends in this space point toward innovative approaches that leverage technology and data-driven insights. These developments create new opportunities for optimization and growth.\n\n`;
+                }
+            });
+            
+            content += `## Conclusion\n\nIn summary, ${topic} represents a significant opportunity for growth and improvement. By understanding the key principles outlined above and implementing them systematically, positive outcomes can be achieved.\n\nThe journey toward mastery requires patience, dedication, and continuous learning. Start with small steps and build momentum over time.`;
+            
+            // Add seed ideas if provided
+            if (seedIdeas && seedIdeas.trim()) {
+                const ideas = seedIdeas.split(',').map(idea => idea.trim()).filter(Boolean);
+                if (ideas.length > 0) {
+                    content += `\n\n## Additional Considerations\n\n`;
+                    ideas.forEach(idea => {
+                        content += `• ${idea}: This aspect of ${topic} deserves special attention and further exploration.\n`;
+                    });
+                }
+            }
+            
+            return {
+                id: Date.now().toString(),
+                title: topic,
+                content,
+                outline,
+                tone,
+                length: `${length.charAt(0).toUpperCase() + length.slice(1)} (${wordCounts[length]} words)`,
+                createdAt: new Date()
+            };
+        }
+
+        // Local storage functions
+        function getSavedPosts() {
+            try {
+                const saved = localStorage.getItem('saved-blog-posts');
+                if (!saved) return [];
+                
+                const posts = JSON.parse(saved);
+                return posts.map(post => ({
+                    ...post,
+                    createdAt: new Date(post.createdAt)
+                }));
+            } catch (error) {
+                console.error('Error loading saved posts:', error);
+                return [];
+            }
+        }
+
+        function savePost(post) {
+            try {
+                const saved = getSavedPosts();
+                const updated = [post, ...saved];
+                localStorage.setItem('saved-blog-posts', JSON.stringify(updated));
+                renderSavedBlogs();
+            } catch (error) {
+                console.error('Error saving post:', error);
+            }
+        }
+
+        function deletePost(id) {
+            try {
+                const saved = getSavedPosts();
+                const filtered = saved.filter(post => post.id !== id);
+                localStorage.setItem('saved-blog-posts', JSON.stringify(filtered));
+                renderSavedBlogs();
+            } catch (error) {
+                console.error('Error deleting post:', error);
+            }
+        }
+
+        function clearAllPosts() {
+            try {
+                localStorage.removeItem('saved-blog-posts');
+                renderSavedBlogs();
+            } catch (error) {
+                console.error('Error clearing posts:', error);
+            }
+        }
+
+        // Download functions
+        function downloadAsMarkdown(post) {
+            const markdown = `# ${post.title}\n\n*Generated on ${post.createdAt.toLocaleDateString()} | ${post.length} | ${post.tone} tone*\n\n${post.content}`;
+            
+            const blob = new Blob([markdown], { type: 'text/markdown' });
+            const url = URL.createObjectURL(blob);
+            const a = document.createElement('a');
+            a.href = url;
+            a.download = `${post.title.replace(/[^a-z0-9]/gi, '_').toLowerCase()}.md`;
+            document.body.appendChild(a);
+            a.click();
+            document.body.removeChild(a);
+            URL.revokeObjectURL(url);
+        }
+
+        function downloadAsText(post) {
+            const text = `${post.title}\n${'='.repeat(post.title.length)}\n\nGenerated on ${post.createdAt.toLocaleDateString()}\nLength: ${post.length}\nTone: ${post.tone}\n\n${post.content}`;
+            
+            const blob = new Blob([text], { type: 'text/plain' });
+            const url = URL.createObjectURL(blob);
+            const a = document.createElement('a');
+            a.href = url;
+            a.download = `${post.title.replace(/[^a-z0-9]/gi, '_').toLowerCase()}.txt`;
+            document.body.appendChild(a);
+            a.click();
+            document.body.removeChild(a);
+            URL.revokeObjectURL(url);
+        }
+
+        // Render saved blogs
+        function renderSavedBlogs() {
+            const posts = getSavedPosts();
+            const container = document.getElementById('saved-blogs-container');
+            const countEl = document.getElementById('saved-count');
+            const noBlogsEl = document.getElementById('no-blogs');
+            
+            countEl.textContent = posts.length;
+            
+            if (posts.length === 0) {
+                noBlogsEl.style.display = 'block';
+                container.innerHTML = '';
+                container.appendChild(noBlogsEl);
+                return;
+            }
+            
+            noBlogsEl.style.display = 'none';
+            
+            container.innerHTML = posts.map(post => `
+                <div class="bg-slate-800 border border-slate-700 rounded-lg p-4 mb-4">
+                    <div class="flex items-start justify-between">
+                        <div class="flex-1">
+                            <h3 class="text-lg font-semibold text-slate-100 line-clamp-2 mb-2">${post.title}</h3>
+                            <div class="flex items-center gap-4 text-sm text-slate-400 mb-3">
+                                <span>📅 ${post.createdAt.toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric', hour: '2-digit', minute: '2-digit' })}</span>
+                                <span>${post.length}</span>
+                                <span>${post.tone} tone</span>
+                            </div>
+                            ${post.outline && post.outline.length > 0 ? `
+                                <div class="space-y-1">
+                                    <p class="text-sm font-medium text-slate-400 mb-2">Outline:</p>
+                                    ${post.outline.slice(0, 3).map(point => `
+                                        <p class="text-sm text-slate-400">• ${point}</p>
+                                    `).join('')}
+                                    ${post.outline.length > 3 ? `
+                                        <p class="text-sm text-slate-400">... and ${post.outline.length - 3} more points</p>
+                                    ` : ''}
+                                </div>
+                            ` : ''}
+                        </div>
+                        <div class="flex gap-1 ml-4">
+                            <button onclick="downloadAsMarkdown(${JSON.stringify(post).replace(/"/g, '&quot;')})" class="p-2 rounded bg-slate-700 hover:bg-slate-600 text-sm transition-all duration-300" title="Export as Markdown">
+                                📝
+                            </button>
+                            <button onclick="downloadAsText(${JSON.stringify(post).replace(/"/g, '&quot;')})" class="p-2 rounded bg-slate-700 hover:bg-slate-600 text-sm transition-all duration-300" title="Export as Text">
+                                📄
+                            </button>
+                            <button onclick="deletePost('${post.id}')" class="p-2 rounded bg-slate-700 hover:bg-red-600 text-sm transition-all duration-300" title="Delete">
+                                🗑️
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            `).join('');
+        }
+
+        // Event listeners
+        blogForm.addEventListener('submit', async (e) => {
+            e.preventDefault();
+            
+            const topic = topicEl.value.trim();
+            if (!topic) {
+                showToast('Please enter a topic', 'error');
+                return;
+            }
+            
+            generateBtn.textContent = 'Generating...';
+            generateBtn.disabled = true;
+            
+            // Simulate AI processing delay
+            await new Promise(resolve => setTimeout(resolve, 1000));
+            
+            const formData = {
+                topic,
+                tone: toneEl.value,
+                length: lengthEl.value,
+                seedIdeas: seedIdeasFormEl.value
+            };
+            
+            currentPost = generateBlogPost(formData);
+            draftEl.value = currentPost.content;
+            
+            generateBtn.textContent = 'Generate';
+            generateBtn.disabled = false;
+            
+            showToast('Blog post generated successfully!');
+        });
+
+        clearBtn.addEventListener('click', () => {
+            topicEl.value = '';
+            toneEl.value = 'Professional';
+            lengthEl.value = 'medium';
+            seedIdeasFormEl.value = '';
+            draftEl.value = '';
+            seedIdeasEl.value = '';
+            currentPost = null;
+        });
+
+        copyBtn.addEventListener('click', async () => {
+            try {
+                await navigator.clipboard.writeText(draftEl.value);
+                showToast('Copied to clipboard!');
+            } catch (error) {
+                showToast('Failed to copy to clipboard', 'error');
+            }
+        });
+
+        saveBtn.addEventListener('click', () => {
+            if (!currentPost) {
+                showToast('No blog post to save', 'error');
+                return;
+            }
+            
+            const updatedPost = { ...currentPost, content: draftEl.value };
+            savePost(updatedPost);
+            showToast('Blog post saved!');
+        });
+
+        exportMdBtn.addEventListener('click', () => {
+            if (!currentPost) {
+                showToast('No blog post to export', 'error');
+                return;
+            }
+            
+            const updatedPost = { ...currentPost, content: draftEl.value };
+            downloadAsMarkdown(updatedPost);
+            showToast('Markdown file downloaded!');
+        });
+
+        exportTxtBtn.addEventListener('click', () => {
+            if (!currentPost) {
+                showToast('No blog post to export', 'error');
+                return;
+            }
+            
+            const updatedPost = { ...currentPost, content: draftEl.value };
+            downloadAsText(updatedPost);
+            showToast('Text file downloaded!');
+        });
+
+        expandBtn.addEventListener('click', async () => {
+            const ideas = seedIdeasEl.value.trim();
+            if (!ideas) {
+                showToast('Please enter some seed ideas', 'error');
+                return;
+            }
+            
+            if (!currentPost) {
+                showToast('Generate a blog post first', 'error');
+                return;
+            }
+            
+            expandBtn.textContent = 'Expanding...';
+            expandBtn.disabled = true;
+            
+            // Simulate processing
+            await new Promise(resolve => setTimeout(resolve, 800));
+            
+            const expandedFormData = {
+                topic: currentPost.title,
+                tone: currentPost.tone,
+                length: currentPost.length.toLowerCase().split(' ')[0],
+                seedIdeas: ideas
+            };
+            
+            const expandedPost = generateBlogPost(expandedFormData);
+            const expandedContent = expandedPost.content.split('## Conclusion')[0];
+            
+            draftEl.value = currentPost.content + '\n\n' + expandedContent;
+            currentPost.content = draftEl.value;
+            
+            seedIdeasEl.value = '';
+            expandBtn.textContent = 'Expand';
+            expandBtn.disabled = false;
+            
+            showToast('Content expanded successfully!');
+        });
+
+        clearAllBtn.addEventListener('click', () => {
+            if (confirm('Are you sure you want to delete all saved blog posts?')) {
+                clearAllPosts();
+                showToast('All blog posts cleared!');
+            }
+        });
+
+        // Initialize
+        renderSavedBlogs();
+    </script>
+</body>
+</html>
