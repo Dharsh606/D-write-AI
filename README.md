@@ -18,8 +18,8 @@ It helps you **generate ideas, correct grammar, refine tone, and restructure tex
 
 ### ✍️ Writing Assistant in Action
 ![Editor Screenshot](screenshots/draft.png)
-![Editor Screenshot](screenshots/blog_generated.png)
-![Editor Screenshot](screenshots/save_option.png)
+![Editor Screenshot](screenshots/bloggenerated.png)
+![Editor Screenshot](screenshots/saveoption.png)
 
 > 📌 Save your screenshots in a folder called `screenshots` inside the repo, and update the file paths above.
 
