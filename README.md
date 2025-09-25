@@ -37,6 +37,12 @@ It helps you **generate ideas, correct grammar, refine tone, and restructure tex
 
 ## 🚀 Getting Started
 
+## 📄 License
+
+This project is licensed under the **MIT License**.  
+Feel free to use, modify, and share it with credits!
+
+
 1. Clone the repository:
    ```bash
    git clone https://github.com/Dharsh606/D-write-AI.git
